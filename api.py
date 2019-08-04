@@ -7,6 +7,7 @@ import os
 
 app = Flask(__name__)
 
+# set up environmental variables
 def get_env_variable(name):
     try:
         return os.environ[name]
@@ -14,7 +15,6 @@ def get_env_variable(name):
         message = "Expected environment variable '{}' not set.".format(name)
         raise Exception(message)
 
-# the values of those depend on your setup
 POSTGRES_URL = get_env_variable("POSTGRES_URL")
 POSTGRES_USER = get_env_variable("POSTGRES_USER")
 POSTGRES_PW = get_env_variable("POSTGRES_PW")
@@ -24,8 +24,8 @@ DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user=POSTGRES_USE
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
 
+# define database and schema
 db = SQLAlchemy(app)
-
 
 class Click(db.Model):
 
@@ -37,11 +37,10 @@ class Click(db.Model):
     def __init__(self, clicks):
         self.clicks = clicks
 
-
-
 api = Api(app)
 clicks = []
 
+# reset database
 @app.cli.command('resetdb')
 def resetdb_command():
 
@@ -56,7 +55,7 @@ def resetdb_command():
     db.create_all()
     print('Done!')
 
-
+# test add a row
 @app.cli.command('add')
 def test_add():
     click = Click(clicks=100)
@@ -64,18 +63,12 @@ def test_add():
     db.session.commit()
     print("added")
 
-
-class HelloWorld(Resource):
+class Clicky(Resource):
     def get(self):
-        print('flask GET')
-        json = {'all_clicks': clicks}
-        return json
+        return {'all_clicks': clicks}
 
     def post(self):
-    	print("flask POST")
-    	print(request.get_json())
     	new_clicks = request.get_json()['new_clicks']
-    	print(new_clicks)
     	clicks.extend(new_clicks)
     	return {'new_clicks': new_clicks}
 
