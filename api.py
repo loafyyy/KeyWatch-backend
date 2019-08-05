@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import database_exists, create_database, drop_database
@@ -7,6 +8,7 @@ import os
 import datetime
 
 app = Flask(__name__)
+CORS(app)
 
 # set up environmental variables
 def get_env_variable(name):
@@ -91,7 +93,13 @@ def test_add():
 
 class Clicks(Resource):
     def get(self):
-        return jsonify(clicks=[i.serialize for i in Click.query.limit(100).all()])
+        # get last 100 keystrokes
+        q = Click.query.order_by(Click.id.desc()).limit(100).all()
+        clicks=[i.serialize for i in q]
+        resp = jsonify(clicks)
+
+        print(resp)
+        return resp
 
     def post(self):
 
