@@ -20,7 +20,8 @@ cd into the repo
 Run "pip install -r requirements.txt" - this command downloads all the Python libraries needed to run the backend server  
 
 ### 3. Run the server
-cd into the repo if not in there already  
+cd into the repo if not in there already 
+Run "source setup.sh" - this sets up the environment variables  
 Run "python api.py"
 
 ### 4. Testing to make sure it worked
