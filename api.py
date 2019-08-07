@@ -30,7 +30,8 @@ POSTGRES_PW = get_env_variable("POSTGRES_PW")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 
 # connect to database
-DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user=POSTGRES_USER,pw=POSTGRES_PW,url=POSTGRES_URL,db=POSTGRES_DB)
+#DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user=POSTGRES_USER,pw=POSTGRES_PW,url=POSTGRES_URL,db=POSTGRES_DB)
+DB_URL = 'postgresql+psycopg2://{url}/{db}'.format(user=POSTGRES_USER,pw=POSTGRES_PW,url=POSTGRES_URL,db=POSTGRES_DB)
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
 
@@ -93,12 +94,26 @@ def test_add():
 
 class Clicks(Resource):
     def get(self):
-        # get last 100 keystrokes
-        q = Click.query.order_by(Click.id.desc()).limit(100).all()
+
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+
+        # default query is last 100 keystrokes
+        if (start_date == None or end_date == None):
+            q = Click.query.order_by(Click.id.desc()).limit(100).all()
+
+        # query for keystrokes between the given dates (inclusive)
+        else:
+            # convert from string to datetime
+            start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            end_date += datetime.timedelta(days=1)
+
+            q = Click.query.filter(Click.time >= start_date).filter(Click.time <= end_date)
+
         clicks=[i.serialize for i in q]
         resp = jsonify(clicks)
 
-        print(resp)
         return resp
 
     def post(self):
