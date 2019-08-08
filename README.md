@@ -1,6 +1,6 @@
 # KeyWatch-backend
 
-This guide helps you setup the backend server for the Chrome extension.
+This guide helps you setup the backend server for the Chrome extension. The actual API is in the section below.   
 
 ### 1. Set up PostgreSQL (version 11)
 ##### Mac:  
@@ -32,3 +32,20 @@ https://www.microfocus.com/documentation/idol/IDOL_12_0/MediaServer/Guides/html/
 * Run "flask add"  
 * Go to "http://127.0.0.1:5000/" in your browser  
 * You should see a JSON object - if you do, then it worked!  
+
+
+# API   
+
+### Resource URL   
+http://127.0.0.1:5000/   
+
+### Resource Information   
+
+Response formats: JSON  
+Requires authentication: No
+
+### Parameters
+| Name | Required | Description | Default Value | Example |
+|------|----------|-------------|---------------|---------|
+| start_date | No, unless end_date is given | Start date of keystrokes (inclusive) | None | 2019-08-05 |
+| end_date | No, unless start_date is given | End date of keystrokes (inclusive) | None | 2019-08-07 |
