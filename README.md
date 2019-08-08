@@ -47,5 +47,5 @@ Requires authentication: No
 ### Parameters
 | Name | Required | Description | Default Value | Example |
 |------|----------|-------------|---------------|---------|
-| start_date | No, unless end_date is given | Start date of keystrokes (inclusive) | None | 2019-08-05 |
-| end_date | No, unless start_date is given | End date of keystrokes (inclusive) | None | 2019-08-07 |
+| start_date | No | Start date of keystrokes (inclusive) | None | 2019-08-05 |
+| end_date | No | End date of keystrokes (inclusive) | None | 2019-08-07 |
