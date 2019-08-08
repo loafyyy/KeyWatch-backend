@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 from flask import Flask, request, jsonify
+import click
 from flask_cors import CORS
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import database_exists, create_database, drop_database
 import os
 import datetime
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +25,14 @@ def serialize_datetime(value):
     if value is None:
         return None
     return value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+def str_to_datetime(date, timestamp):
+    date_string = str(date) + str(timestamp)
+    try:
+        return datetime.datetime.strptime(date_string, '%y%m%d%H:%M:%S.%f')
+    except ValueError as e:
+        print(str(e))
+        return None
 
 POSTGRES_URL = get_env_variable("POSTGRES_URL")
 POSTGRES_USER = get_env_variable("POSTGRES_USER")
@@ -44,8 +54,8 @@ class Click(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     time = db.Column(db.DateTime)
-    hold = db.Column(db.Integer)
-    latency = db.Column(db.Integer)
+    hold = db.Column(db.Float)
+    latency = db.Column(db.Float)
     side = db.Column(db.String)
 
     def __init__(self, time, hold, latency, side):
@@ -87,10 +97,31 @@ def resetdb_command():
 def add_command():
     ms = 1564918545446
     time = datetime.datetime.fromtimestamp(ms/1000.0)
-    click = Click(time=time, hold='100', latency='200', side='L')
+    click = Click(time=time, hold='100.1', latency='200.1', side='L')
     db.session.add(click)
     db.session.commit()
     print("Added!")
+
+# add data from txt file into database
+@app.cli.command('adddata')
+@click.argument("filename")
+def add_data(filename):
+    df = pd.read_csv(filename, sep='\t', header=None)
+    df = df.drop(8, axis=1)
+    df.columns = ['patiend_id', 'date', 'timestamp', 'hand', 'hold_time', 'direction', 'latency_time', 'flight_time']
+    df['datetime'] = df.apply(lambda row: str_to_datetime(row['date'], row['timestamp']), axis=1)
+    df['hold_time'] = pd.to_numeric(df['hold_time'], errors='coerce')
+    df['latency_time'] = pd.to_numeric(df['latency_time'], errors='coerce')
+    df['flight_time'] = pd.to_numeric(df['flight_time'], errors='coerce')
+    df = df.dropna()
+    
+    for index, row in df.iterrows():
+        click = Click(time=row['datetime'], hold=row['hold_time'], latency=row['latency_time'], side=row['hand'])
+        db.session.add(click)
+
+    db.session.commit()
+    print("Added all data!")
+
 
 class Clicks(Resource):
     def get(self):
@@ -98,9 +129,9 @@ class Clicks(Resource):
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
 
-        # default query is last 100 keystrokes
+        # default query is all keystrokes
         if start_date == None and end_date == None:
-            q = Click.query.order_by(Click.id.desc()).limit(100).all()
+            q = Click.query.all()
 
         # query for keystrokes before the end date (inclusive)
         elif start_date == None and end_date != None:
