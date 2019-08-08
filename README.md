@@ -47,5 +47,22 @@ Requires authentication: No
 ### Parameters
 | Name | Required | Description | Default Value | Example |
 |------|----------|-------------|---------------|---------|
-| start_date | No, unless end_date is given | Start date of keystrokes (inclusive) | None | 2019-08-05 |
-| end_date | No, unless start_date is given | End date of keystrokes (inclusive) | None | 2019-08-07 |
+| start_date | No | Start date of keystrokes (inclusive) | None | 2019-08-05 |
+| end_date | No | End date of keystrokes (inclusive) | None | 2019-08-07 |
+  
+If both start_date and end_date are not given, the last 100 keystrokes are returned.  
+
+##### Examples  
+http://127.0.0.1:5000?start_date=2019-08-05&end_date=2019-08-07  
+This returns all the keystrokes between 2019-08-05 and 2019-08-07 inclusive.  
+
+http://127.0.0.1:5000?start_date=2019-08-05   
+This returns all the keystrokes after 2019-08-05 (inclusive).  
+
+http://127.0.0.1:5000?end_date=2019-08-07    
+This returns all the keystrokes before 2019-08-07 (inclusive). 
+
+http://127.0.0.1:5000  
+This returns the last 100 keystrokes.  
+
+
