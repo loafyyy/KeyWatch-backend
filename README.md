@@ -63,6 +63,9 @@ This returns all the keystrokes after 2019-08-05 (inclusive).
 http://127.0.0.1:5000?end_date=2019-08-07    
 This returns all the keystrokes before 2019-08-07 (inclusive). 
 
+http://127.0.0.1:5000?limit=100
+This returns the last 100 keystrokes.
+
 http://127.0.0.1:5000  
 This returns all the keystrokes in the database.  
 
