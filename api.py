@@ -128,23 +128,24 @@ class Clicks(Resource):
 
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
+        limit = request.args.get('limit')
 
         # default query is all keystrokes
         if start_date == None and end_date == None:
-            q = Click.query.all()
+            q = Click.query
 
         # query for keystrokes before the end date (inclusive)
         elif start_date == None and end_date != None:
             # convert from string to datetime
             end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
             end_date += datetime.timedelta(days=1)
-            q = Click.query.filter(Click.time <= end_date).all()
+            q = Click.query.filter(Click.time <= end_date)
 
         # query for keystrokes after the start date (inclusive)
         elif start_date != None and end_date == None:
             # convert from string to datetime
             start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            q = Click.query.filter(Click.time >= start_date).all()
+            q = Click.query.filter(Click.time >= start_date)
 
         # query for keystrokes between the given dates (inclusive)
         else:
@@ -153,8 +154,14 @@ class Clicks(Resource):
             end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
             end_date += datetime.timedelta(days=1)
 
-            q = Click.query.filter(Click.time >= start_date).filter(Click.time <= end_date).all()
+            q = Click.query.filter(Click.time >= start_date).filter(Click.time <= end_date)
 
+        # get last clicks
+        if limit != None:
+            q = q.order_by(Click.id.desc()).limit(limit)
+
+
+        q = q.all()
         clicks=[i.serialize for i in q]
         resp = jsonify(clicks)
 
