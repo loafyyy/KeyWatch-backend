@@ -22,7 +22,7 @@ def serialize_datetime(value):
     """Deserialize datetime object into string form for JSON processing."""
     if value is None:
         return None
-    return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
+    return value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 POSTGRES_URL = get_env_variable("POSTGRES_URL")
 POSTGRES_USER = get_env_variable("POSTGRES_USER")
@@ -84,7 +84,7 @@ def resetdb_command():
 
 # test add a row
 @app.cli.command('add')
-def test_add():
+def add_command():
     ms = 1564918545446
     time = datetime.datetime.fromtimestamp(ms/1000.0)
     click = Click(time=time, hold='100', latency='200', side='L')
@@ -99,8 +99,21 @@ class Clicks(Resource):
         end_date = request.args.get('end_date')
 
         # default query is last 100 keystrokes
-        if (start_date == None or end_date == None):
+        if start_date == None and end_date == None:
             q = Click.query.order_by(Click.id.desc()).limit(100).all()
+
+        # query for keystrokes before the end date (inclusive)
+        elif start_date == None and end_date != None:
+            # convert from string to datetime
+            end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            end_date += datetime.timedelta(days=1)
+            q = Click.query.filter(Click.time <= end_date).all()
+
+        # query for keystrokes after the start date (inclusive)
+        elif start_date != None and end_date == None:
+            # convert from string to datetime
+            start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            q = Click.query.filter(Click.time >= start_date).all()
 
         # query for keystrokes between the given dates (inclusive)
         else:
@@ -109,7 +122,7 @@ class Clicks(Resource):
             end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
             end_date += datetime.timedelta(days=1)
 
-            q = Click.query.filter(Click.time >= start_date).filter(Click.time <= end_date)
+            q = Click.query.filter(Click.time >= start_date).filter(Click.time <= end_date).all()
 
         clicks=[i.serialize for i in q]
         resp = jsonify(clicks)
