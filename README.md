@@ -49,3 +49,5 @@ Requires authentication: No
 |------|----------|-------------|---------------|---------|
 | start_date | No | Start date of keystrokes (inclusive) | None | 2019-08-05 |
 | end_date | No | End date of keystrokes (inclusive) | None | 2019-08-07 |
+  
+If both start_date and end_date are not given, the last 100 keystrokes are returned.  
