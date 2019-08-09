@@ -132,7 +132,10 @@ class Clicks(Resource):
 
         # default query is all keystrokes
         if start_date == None and end_date == None:
-            q = Click.query
+            time = db.session.query(Click.time)
+            latency = db.session.query(Click.latency)
+            hold = db.session.query(Click.hold)
+            side = db.session.query(Click.side)
 
         # query for keystrokes before the end date (inclusive)
         elif start_date == None and end_date != None:
@@ -161,9 +164,19 @@ class Clicks(Resource):
             q = q.order_by(Click.id.desc()).limit(limit)
 
 
-        q = q.all()
-        clicks=[i.serialize for i in q]
-        resp = jsonify(clicks)
+        #print(q)
+
+        #q = q.all()
+        #clicks=[i.serialize for i in q]
+
+        time = [value for value, in time.all()]
+        hold = [value for value, in hold.all()]
+        latency = [value for value, in latency.all()]
+        side = [value for value, in side.all()]
+
+
+        print(time)
+        resp = jsonify({'time': time, 'hold': hold, 'latency': latency, 'side': side})
 
         return resp
 
